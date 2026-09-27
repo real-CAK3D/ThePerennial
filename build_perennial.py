@@ -98,12 +98,26 @@ def build(y):
         chapters += pages
         n += len(pages)
     seal = '<a class="seal" href="/" aria-label="Back to The Corner Chronicle">%s</a>' % fb.SEAL
-    cover = fb.page("The Perennial", ('<div class="gum"><span>THE GARDEN\'S ALMANAC · CALCULATED FOR LEWISTON, MAINE</span></div>'
-                                      '<div class="pc-top">%s<div class="ear">%d<br>EDITION<br><b>%d</b><br>chapters</div></div>'
-                                      '<div class="flag"><div class="est">☀ FOR THE YEAR OF OUR GARDEN ☾</div><h1>The<br>Perennial</h1><div class="motto">Comes back every year, deeper rooted</div></div>'
-                                      '<div class="pc-band"><span>WEATHER</span><span>RECORDS</span><span>THE DAYS</span></div>'
-                                      '<div class="pc-teaser"><div class="kicker">Now growing</div><b>Chapter %d — %s</b></div><div class="pc-open">Turn the leaves ›</div>')
-                    % (seal, y, len(months), months[-1] if months else 1, e(dt.date(y, months[-1] if months else 1, 1).strftime("%B"))), " hardcover")
+    art = pk.draw_image(os.path.join(SITE, "img", "covers", "%d.jpg" % y), (
+        "An antique 19th-century almanac woodcut engraving, pure black ink line art on plain white paper, no color, no gray fill, no text or lettering anywhere. "
+        "A roughly square decorative vignette: in the middle a small New England farmhouse with a big red-oak tree and a vegetable garden under a sun and a crescent moon; "
+        "around it, four small corner scenes for the four seasons in Maine: spring planting seedlings, summer haying a field, autumn apple and pumpkin harvest, "
+        "winter splitting firewood in the snow. Tiny details: a Raspberry Pi-sized little radio antenna on the farmhouse roof, a friendly dog. "
+        "Framed by an ornate engraved border of vines, leaves and wheat. Fine cross-hatching like an old almanac cover. No faces in close-up, no portraits."), size="1024x1024", max_px=900)
+    chap = months[-1] if months else 1
+    cover = fb.page("The Perennial", (
+        '<div class="alm"><span class="alm-hole" aria-hidden="true"></span><div class="alm-seal">%s</div>'
+        '<div class="alm-no">No. %d</div><div class="alm-the">THE</div><h1 class="alm-t">Perennial</h1><div class="alm-kind">GARDEN&#39;S ALMANAC</div>'
+        '<div class="alm-plan">Calculated on a new and improved plan for the year of our Garden</div><div class="alm-year">%d</div>'
+        '%s'
+        '<p class="alm-blurb">Being the %s year since the Garden took root. Containing the Moon&#39;s phases, the weather as it fell, the records of the year, '
+        'every day&#39;s headline, and a variety of <i>New, Useful &amp; Entertaining Matter</i>.</p>'
+        '<div class="alm-for">Fitted for the meridian of <b>LEWISTON, MAINE</b>, but will serve for all the Garden&#39;s machines</div>'
+        '<div class="alm-grow">Now growing: Chapter %d — %s</div>'
+        '<div class="alm-foot"><span>Established 2026 by the Garden</span><span>Price: One Season</span></div></div>')
+        % (seal, y - 2025, y, ('<div class="alm-art"><img src="../img/covers/%d.jpg" alt="Almanac woodcut of the four seasons around a Maine farmhouse"></div>' % y) if art else '<div class="alm-art alm-rule">✿ ☀ ✿ ☾ ✿</div>',
+           ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"][min(y - 2026, 9)], chap,
+           e(dt.date(y, chap, 1).strftime("%B"))), " hardcover pr-cov")
     toc = fb.page("Contents", '<div class="pr-toc"><h2>Contents</h2><p class="small">One chapter per month, written by the Garden itself. Tap a month.</p><ol>%s</ol></div>'
                   % "".join('<li><a data-goto="%d">%s <span>%d days recorded</span></a></li>' % (pg, e(dt.date(y, m, 1).strftime("%B")), nd) for m, pg, nd in index))
     back = fb.page("Back Page", ('<div class="gum"><span>THE PERENNIAL · %d EDITION</span></div><div class="pb-body">%s<h2 class="pb-title">The Perennial</h2>'
@@ -117,7 +131,8 @@ def build(y):
     open(os.path.join(SITE, "index.html"), "w").write(html.replace('href="../', 'href="').replace('src="../', 'src="'))
     eds = pk.issues(SITE, pattern=r"\d{4}")
     pk.archive_page(SITE, os.path.join(ROOT, fb.CSS_FILE), "pub-pr", "The Perennial", "every edition", "".join('<li><a href="issues/%s.html">%s edition</a></li>' % (x, x) for x in eds), "🌿")
-    pk.latest(SITE, "The Perennial", today.isoformat(), "%d edition — now growing: %s" % (y, dt.date(y, months[-1], 1).strftime("%B") if months else "—"), "", [])
+    pk.latest(SITE, "The Perennial", today.isoformat(), "%d edition — now growing: %s" % (y, dt.date(y, months[-1], 1).strftime("%B") if months else "—"), "", [],
+              cover=("img/covers/%d.jpg" % y) if art else "")
     print("perennial built:", y, len(months), "chapters")
 
 
